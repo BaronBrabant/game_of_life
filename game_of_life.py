@@ -1,22 +1,9 @@
 import pygame
 import numpy as np
+from rle_decoder import *
+import sys
 
 pygame.init()
-
-# Data
-
-#Pick size of game, edges are "glued" to simulate the infinity of Conways gol
-cols, rows = 60, 60
-width, height = cols*10, rows*10+50
-screen = pygame.display.set_mode((width, height))
-pygame.display.set_caption("Conway's Game of Life")
-button_width = 70
-button_height = 30
-button_padding = 10
-total_button_width = (3 * button_width) + (2 * button_padding)
-start_x = (width - total_button_width) // 2
-button_y = height - 35
-cell_size = width // cols
 
 # Colors
 BLACK = (0, 0, 0)
@@ -24,7 +11,6 @@ WHITE = (255, 255, 255)
 GREY = (112, 128, 144)
 
 
-grid = np.zeros((cols, rows))
 
 def draw_grid(screen, grid):
     for i in range(cols):
@@ -82,8 +68,7 @@ def update_grid(grid):
                 new_grid[i, j] = 1
     return new_grid
 
-def main():
-    global grid
+def main(grid):
     running = True
     game_running = False
     while running:
@@ -127,7 +112,41 @@ def main():
     pygame.quit()
 
 if __name__ == '__main__':
-    main()
+
+    #Pick size of game, edges are "glued" to simulate the infinity of Conways gol
+    cols, rows = 60, 60
+    width, height = cols*10, rows*10+50
+    pygame.display.set_caption("Conway's Game of Life")
+    button_width = 70
+    button_height = 30
+    button_padding = 10
+    total_button_width = (3 * button_width) + (2 * button_padding)
+    start_x = (width - total_button_width) // 2
+    button_y = height - 35
+    cell_size = width // cols
+
+    infoObject = pygame.display.Info()
+    print(pygame.display.set_mode((infoObject.current_w, infoObject.current_h)))
+
+
+    if len(sys.argv) == 1:
+
+        screen = pygame.display.set_mode((width, height))
+
+        grid = np.zeros((cols, rows))
+        main(grid)
+        sys.exit()
+
+    if sys.argv[1] == '-rle' and sys.argv[2] != None:
+        grid, x, y = decode_rle_file(sys.argv[2])
+        cols, rows = x, y
+        width, height = cols*10, rows*10+50
+        grid = np.zeros((cols, rows))
+        screen = pygame.display.set_mode((width, height))
+        main(grid)
+        sys.exit()
+
+     
 
 
 
