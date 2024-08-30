@@ -10,8 +10,6 @@ BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREY = (112, 128, 144)
 
-
-
 def draw_grid(screen, grid):
     for i in range(cols):
         for j in range(rows):
@@ -87,7 +85,12 @@ def main(grid):
                     game_running = False  
                 elif start_x + 2 * (button_width + button_padding) <= x <= start_x + 3 * button_width + 2 * button_padding and button_y <= y <= button_y + button_height:
                     print("Reset button clicked")
-                    grid[:] = 0  
+                    if imported_grid is not None and not np.array_equal(grid, imported_grid):
+                        grid = imported_grid.copy()
+                    else: 
+                        grid[:] = 0
+
+
                     game_running = False  # Stop the game
 
                 else:
@@ -111,37 +114,97 @@ def main(grid):
 
     pygame.quit()
 
+
+def adjust_screen_size1(width, height, cols, rows):
+    infoObject = pygame.display.Info()
+    displayWidth = infoObject.current_w
+    displayHeight = infoObject.current_h
+
+    # Adjust width and height if they exceed the screen size
+    if width > displayWidth:
+        width = displayWidth
+    if height > displayHeight:
+        height = displayHeight
+
+    # Recalculate cell_size to maintain the grid proportions
+    cell_size = min(width // cols, height // rows)
+    width = cell_size * cols
+    height = cell_size * rows + 50  # Add extra height for the buttons or any UI
+
+    return width, height, cell_size
+
+def adjust_screen_size2(cols, rows):
+    # Get the display info
+    infoObject = pygame.display.Info()
+    displayWidth = infoObject.current_w
+    displayHeight = infoObject.current_h
+
+    # Calculate the maximum possible cell size that fits the screen
+    cell_size = min(displayWidth // cols, displayHeight // (rows + 5))  # 5 for some extra space
+
+    # Calculate the width and height based on the new cell size
+    width = cell_size * cols
+    height = cell_size * rows + 50  # 50px reserved for UI elements like buttons
+
+    return width, height, cell_size
+
+def adjust_screen_size(cols, rows):
+
+    # Get the display info
+    infoObject = pygame.display.Info()
+    displayWidth = infoObject.current_w
+    displayHeight = infoObject.current_h
+
+    # Calculate the maximum possible cell size that fits the screen
+    cell_size = min(displayWidth // cols, displayHeight // (rows + 5))  # Slight adjustment for any UI
+
+    # Calculate the width and height based on the new cell size
+    width = cell_size * cols
+    height = cell_size * rows + 30  # Reserve only minimal space for UI elements
+
+    return width, height, cell_size
+
+
 if __name__ == '__main__':
 
-    #Pick size of game, edges are "glued" to simulate the infinity of Conways gol
+
+    pygame.display.set_caption("Conway's Game of Life")
+
+    #Pick size of game, edges are "glued" to simulate the infinity of Conways game of life
     cols, rows = 60, 60
     width, height = cols*10, rows*10+50
-    pygame.display.set_caption("Conway's Game of Life")
+
+    cell_size = width // cols
+
+    #buttons
     button_width = 70
     button_height = 30
     button_padding = 10
     total_button_width = (3 * button_width) + (2 * button_padding)
     start_x = (width - total_button_width) // 2
     button_y = height - 35
-    cell_size = width // cols
-
-    infoObject = pygame.display.Info()
-    print(pygame.display.set_mode((infoObject.current_w, infoObject.current_h)))
-
 
     if len(sys.argv) == 1:
 
-        screen = pygame.display.set_mode((width, height))
-
+        width, height, cell_size = adjust_screen_size(cols, rows)
+        screen = pygame.display.set_mode((width, height), pygame.FULLSCREEN)
         grid = np.zeros((cols, rows))
         main(grid)
         sys.exit()
 
     if sys.argv[1] == '-rle' and sys.argv[2] != None:
+
         grid, x, y = decode_rle_file(sys.argv[2])
+        imported_grid = grid.copy()
         cols, rows = x, y
         width, height = cols*10, rows*10+50
-        grid = np.zeros((cols, rows))
+
+        #buttons
+        width, height, cell_size = adjust_screen_size(cols, rows)
+        total_button_width = (3 * button_width) + (2 * button_padding)
+        start_x = (width - total_button_width) // 2
+        button_y = height - 35
+
         screen = pygame.display.set_mode((width, height))
         main(grid)
         sys.exit()

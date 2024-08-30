@@ -4,10 +4,10 @@ def decode_rle_file(file_path):
     with open(file_path, 'r') as file:
         rle_lines = parse_rle(file.read())
         header_line = rle_lines[0]
-        x, y = parse_header(header_line)
+        cols, rows = parse_header(header_line)
         rle_data = ''.join(rle_lines[1:])
-        grid = decode_rle(rle_data, x, y)
-        return grid, x, y
+        grid = decode_rle(rle_data, cols, rows)
+        return grid.transpose(), cols, rows
 
 def parse_rle(rle_string):
     """Parses the RLE encoded string and returns a list of lines."""
