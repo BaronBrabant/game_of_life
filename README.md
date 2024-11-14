@@ -34,4 +34,4 @@ example file: ./rle/sawmill
 python game_of_life.py -rle rle/sawmill
 ```
 
-3. Enjoy!
+3. Enjoy and send me an email if you have issue!
